@@ -45,9 +45,9 @@ void free_data(void)
 	char *bar;
 
 	bar = progress_bar();
-	ft_printf("\r%d%% %s | bytes: %d/%d\n", (g_data->bytes_send * 100) / (g_data->bytes_size - offset), bar, g_data->bytes_send, (g_data->bytes_size - offset));
+	ft_printf("\r%d%% %s | bytes: %d/%d\n", ((g_data->bytes_send - offset) * 100) / (g_data->bytes_size - offset), bar, g_data->bytes_send - offset, (g_data->bytes_size - offset));
 	gettimeofday(&t2, NULL);
-	printf("this upload took: %.3fs", (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1e6);
+	printf("this upload took: %.3fs (%.0fB/s)", (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1e6, g_data->bytes_size / ((t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1e6));
 	free(bar);
 	free(g_data->message);
 	free(g_data);
@@ -153,10 +153,10 @@ int main(int argc, char **argv)
 		return (1);
 	g_data = malloc(sizeof(t_data));
 	g_data->pid = ft_atoi(argv[1]);
+	g_data->bytes_send = 0;
 	read_file(argv[2]);
 	g_data->p = g_data->message;
 	g_data->buffer = *g_data->p;
-	g_data->bytes_send = 0;
 	g_data->finished = 0;
 	g_data->buffer_size = 0;
 	signal(SIGUSR1, signal_handler);
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 	while (1)
 	{
 		bar = progress_bar();
-		ft_printf("\r%d%% %s | bytes: %d/%d", (g_data->bytes_send * 100) / (g_data->bytes_size - offset), bar, g_data->bytes_send, (g_data->bytes_size - offset));
+		ft_printf("\r%d%% %s | bytes: %d/%d", ((g_data->bytes_send - offset) * 100) / (g_data->bytes_size - offset), bar, g_data->bytes_send - offset, (g_data->bytes_size - offset));
 		free(bar);
 		if (g_data->finished)
 			free_data();
